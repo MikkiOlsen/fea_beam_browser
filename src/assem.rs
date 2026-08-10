@@ -1,11 +1,11 @@
-use nalgebra::{DMatrix, Vector2};
-use crate::types::{Node, Element};
 use crate::kbeam::kebeam;
+use crate::types::{Element, Node};
+use nalgebra::{DMatrix, Vector2};
 
 pub fn assemble_global_stiffness(nodes: &[Node], elements: &[Element]) -> DMatrix<f64> {
     let dof_per_node = 3;
     let total_dof = nodes.len() * dof_per_node;
-    
+
     let mut k_global = DMatrix::<f64>::zeros(total_dof, total_dof);
 
     for el in elements {
@@ -18,8 +18,12 @@ pub fn assemble_global_stiffness(nodes: &[Node], elements: &[Element]) -> DMatri
         let ke = kebeam(p1, p2, el.e, el.a, el.i);
 
         let ig = [
-            n1_idx * 3, n1_idx * 3 + 1, n1_idx * 3 + 2,
-            n2_idx * 3, n2_idx * 3 + 1, n2_idx * 3 + 2,
+            n1_idx * 3,
+            n1_idx * 3 + 1,
+            n1_idx * 3 + 2,
+            n2_idx * 3,
+            n2_idx * 3 + 1,
+            n2_idx * 3 + 2,
         ];
 
         for i in 0..6 {
@@ -48,11 +52,7 @@ pub fn apply_boundary_conditions(k_global: &mut DMatrix<f64>, nodes: &[Node]) {
             crate::types::SupportType::Fixed => (true, true, true),     // Clamped
         };
 
-        let dofs_to_fix = [
-            (fix_x, dof_x),
-            (fix_y, dof_y),
-            (fix_rot, dof_rot),
-        ];
+        let dofs_to_fix = [(fix_x, dof_x), (fix_y, dof_y), (fix_rot, dof_rot)];
 
         for (is_fixed, dof) in dofs_to_fix.iter() {
             if *is_fixed {

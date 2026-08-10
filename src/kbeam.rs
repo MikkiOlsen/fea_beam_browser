@@ -4,8 +4,10 @@ pub fn kebeam(p1: Vector2<f64>, p2: Vector2<f64>, e: f64, a: f64, i: f64) -> Mat
     let dx = p2.x - p1.x;
     let dy = p2.y - p1.y;
     let l = (dx * dx + dy * dy).sqrt();
-    
-    if l == 0.0 { return Matrix6::zeros(); }
+
+    if l == 0.0 {
+        return Matrix6::zeros();
+    }
 
     let nx = dx / l;
     let ny = dy / l;

@@ -1,10 +1,10 @@
 use macroquad::prelude::*;
 
-mod types;
-mod ui;
-mod kbeam;
 mod assem;
 mod fe_manager;
+mod kbeam;
+mod types;
+mod ui;
 
 #[macroquad::main("Statics Analyzer")]
 async fn main() {
@@ -13,14 +13,14 @@ async fn main() {
 
     loop {
         ui::handle_input(&mut app_state);
-        
+
         if app_state.should_solve {
             app_state.should_solve = false;
             fe_manager.build_and_solve(&app_state.nodes, &app_state.elements);
         }
-        
+
         ui::render(&mut app_state, &fe_manager);
-        
+
         next_frame().await;
     }
 }
