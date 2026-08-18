@@ -101,8 +101,8 @@ impl AppState {
             cam_pan: Vec2::ZERO,
             last_mouse_pos: Vec2::ZERO,
 
-            def_scale: 100.0,
-            input_scale: "100.0".to_string(),
+            def_scale: 1.0,
+            input_scale: "1.0".to_string(),
         }
     }
 }
