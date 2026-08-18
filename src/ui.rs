@@ -4,12 +4,13 @@ use macroquad::ui::{hash, root_ui, widgets};
 
 fn world_to_screen(world_pos: Vec2, zoom: f32, pan: Vec2) -> Vec2 {
     let screen_center = vec2(screen_width() * 0.5, screen_height() * 0.5);
-    (world_pos * zoom) + screen_center + pan
+    vec2(world_pos.x, -world_pos.y) * zoom + screen_center + pan
 }
 
 fn screen_to_world(screen_pos: Vec2, zoom: f32, pan: Vec2) -> Vec2 {
     let screen_center = vec2(screen_width() * 0.5, screen_height() * 0.5);
-    (screen_pos - screen_center - pan) / zoom
+    let d = (screen_pos - screen_center - pan) / zoom;
+    vec2(d.x, -d.y)
 }
 
 fn point_line_dist(p: Vec2, v: Vec2, w: Vec2) -> f32 {
@@ -59,7 +60,9 @@ pub fn handle_input(state: &mut AppState) {
         state.cam_zoom = (state.cam_zoom * zoom_factor).clamp(0.1, 10.0);
 
         let screen_center = vec2(screen_width() * 0.5, screen_height() * 0.5);
-        state.cam_pan = mouse_pos - screen_center - (mouse_world_before * state.cam_zoom);
+        state.cam_pan = mouse_pos
+            - screen_center
+            - vec2(mouse_world_before.x, -mouse_world_before.y) * state.cam_zoom;
     }
 
     let mouse_pos = vec2(mx, my);
@@ -356,8 +359,8 @@ pub fn render(state: &mut AppState, fe: &crate::fe_manager::FeManager) {
 
     let start_x = (top_left_world.x / grid_size).floor() * grid_size;
     let end_x = (bottom_right_world.x / grid_size).ceil() * grid_size;
-    let start_y = (top_left_world.y / grid_size).floor() * grid_size;
-    let end_y = (bottom_right_world.y / grid_size).ceil() * grid_size;
+    let start_y = (top_left_world.y.min(bottom_right_world.y) / grid_size).floor() * grid_size;
+    let end_y = (top_left_world.y.max(bottom_right_world.y) / grid_size).ceil() * grid_size;
 
     let mut x = start_x;
     while x <= end_x {
@@ -473,14 +476,14 @@ pub fn render(state: &mut AppState, fe: &crate::fe_manager::FeManager) {
             if has_solution {
                 let u1_x = fe.displacements[i1 * 3] as f32;
                 let u1_y = fe.displacements[i1 * 3 + 1] as f32;
-                let r1 = -1.0 * (fe.displacements[i1 * 3 + 2] as f32);
+                let r1 = fe.displacements[i1 * 3 + 2] as f32;
 
                 let u2_x = fe.displacements[i2 * 3] as f32;
                 let u2_y = fe.displacements[i2 * 3 + 1] as f32;
-                let r2 = -1.0 * (fe.displacements[i2 * 3 + 2] as f32);
+                let r2 = fe.displacements[i2 * 3 + 2] as f32;
 
-                let ds1 = vec2(u1_x, -u1_y);
-                let ds2 = vec2(u2_x, -u2_y);
+                let ds1 = vec2(u1_x, u1_y);
+                let ds2 = vec2(u2_x, u2_y);
 
                 let p1 = n1.pos;
                 let p2 = n2.pos;
@@ -489,7 +492,7 @@ pub fn render(state: &mut AppState, fe: &crate::fe_manager::FeManager) {
 
                 if l_world > 0.0 {
                     let n_w = dir_world / l_world;
-                    let perp_w = vec2(n_w.y, -n_w.x);
+                    let perp_w = vec2(-n_w.y, n_w.x);
 
                     let u1_axial = ds1.dot(n_w);
                     let v1_trans = ds1.dot(perp_w);
